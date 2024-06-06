@@ -1,0 +1,63 @@
+/* Landing Page CSS */
+#loginbod {
+    background-image: url("images/sub.jpg") ;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Ensure it takes full viewport height */
+    margin: 0; /* Remove default body margin */
+}
+
+#mainbox {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 20px;
+    width: 100%;
+    max-width: 600px; /* Set a max-width for the mainbox */
+    text-align: center; /* Ensure text is left-aligned */
+}
+
+form div {
+    margin-bottom: 1em; /* Add some spacing between form elements */
+}
+
+h1, label, input, button {
+    display: block; /* Ensure each element is on its own line */
+    width: 100%; /* Make sure form elements take full width of container */
+}
+
+h1 {
+    margin-bottom: 25px; /* Add some margin below the header */
+    text-align: center; /* Center align the header text */
+}
+
+input, button {
+    padding: 0.5em; /* Add some padding to input and button */
+}
+
+button {
+    margin-top: 1em; /* Add some margin to the top of the button */
+}
+#maria {
+    width: 300px;
+    height: 300px; 
+    animation: rotateImage 10s linear infinite; /* Adjust the duration (10s) as needed */
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 25px;
+}
+
+@keyframes rotateImage {
+    from {
+        transform: rotate(0deg); /* Start rotation from 0 degrees */
+    }
+    to {
+        transform: rotate(360deg); /* Rotate to 360 degrees */
+    }
+}
+.volume-slider{
+    margin-top:10px;
+}
+#loginButton{
+    margin-top:25px;
+}
