@@ -1,6 +1,7 @@
 /* Landing Page CSS */
 #loginbod {
     background-image: url("images/sub.jpg") ;
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;

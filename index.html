@@ -19,8 +19,9 @@
     <link rel="stylesheet" href="./landing.css">
     <!-- font -->
     <link href="https://fonts.cdnfonts.com/css/eurostile-extended" rel="stylesheet">
-    <title>Marias Melodies</title>
-
+    <title>Maria's Melodies</title>
+    <!-- icon -->
+    <link rel="icon" href="/images/sprial.png">
     <!-- Run BEFORE page is finished loading (before window.onload - don't add the `defer` attribute): -->
     <script src="./auth.js"></script>
     <script>
@@ -55,7 +56,7 @@
         <div class="volume-slider">
             <input id="volume-slider" type="range" min="0" max="100" step="1" value="50">
         </div>
-    </div>
+        <button id="registerbutton" type="button">Register</button> <!-- Note the type change -->
     </main>
     
     <footer>
@@ -65,5 +66,6 @@
     <!-- Page-specific code -->
     <script src="landing.js"></script>
     <script src="cursor.js"></script>
+    <script src="posts.js"></script> 
 </body>
 </html>
