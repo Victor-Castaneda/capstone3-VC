@@ -1,8 +1,8 @@
 /* Global CSS for all pages */
-
 * {
     box-sizing: border-box;
     font-family: 'Eurostile Extended', sans-serif;
+    
     /* outline: 1px dotted red; */
 }
 

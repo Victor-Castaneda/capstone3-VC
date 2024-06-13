@@ -28,14 +28,38 @@
         <h1>POSTS PAGE</h1>
     </header>
     <main>
+        <div class="container">
+        <div id="leftdiv"> Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique recusandae totam hic consectetur illo illum rerum esse delectus, suscipit non, iste voluptate optio ab nostrum iusto veniam temporibus enim cumque? </div>
+        <div id="bigdiv"> Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dolorem consequatur facere officiis debitis quis laborum voluptate voluptatibus qui in! Sequi architecto accusamus error amet fuga. Sunt minima consequatur et nobis? </div>
+        <div id="rightdiv"> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloremque a ratione velit temporibus minima, laborum error quos unde accusantium dolores natus maiores debitis alias necessitatibus, deleniti harum consectetur. Dignissimos, veniam. </div>
+    </div>
         <button id="login-button" class="btn btn-primary">Log in with Spotify</button>
         <div id="tracks" class="mt-3"></div>
     </main>
-    <a class="weatherwidget-io" href="https://forecast7.com/en/33d45n112d07/phoenix/?unit=us" data-label_1="PHOENIX" data-label_2="WEATHER" data-theme="original" >PHOENIX WEATHER</a>
-    <script>
-    !function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0];if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src='https://weatherwidget.io/js/widget.min.js';fjs.parentNode.insertBefore(js,fjs);}}(document,'script','weatherwidget-io-js');
-    </script>
     <footer></footer>
     <script src="posts.js"></script>
+    <script> document.addEventListener('DOMContentLoaded', () => {
+        const accessToken = sessionStorage.getItem('spotifyAccessToken');
+        if (accessToken) {
+            fetch('https://api.spotify.com/v1/me/tracks', {
+                headers: {
+                    'Authorization': 'Bearer ' + accessToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tracksDiv = document.getElementById('tracks');
+                data.items.forEach((item, idx) => {
+                    const track = item.track;
+                    const trackElement = document.createElement('div');
+                    trackElement.textContent = `${idx + 1}: ${track.artists[0].name} – ${track.name}`;
+                    tracksDiv.appendChild(trackElement);
+                });
+            })
+            .catch(error => console.error('Error fetching saved tracks:', error));
+        } else {
+            console.error('Access token not found in session storage');
+        }
+    });</script>
 </body>
 </html>
