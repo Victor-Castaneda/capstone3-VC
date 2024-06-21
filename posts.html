@@ -30,13 +30,19 @@
     <main>
         <div class="container">
         <div id="leftdiv"> Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique recusandae totam hic consectetur illo illum rerum esse delectus, suscipit non, iste voluptate optio ab nostrum iusto veniam temporibus enim cumque? </div>
-        <div id="tracks" class="bigdiv">  </div>
+        <div id="tracks" class="bigdiv">
+            
+            <label for="postText">Post Text:</label>
+            <input type="text" id="postText" name="postText" required>
+            <button onclick="createPost()">Create Post</button>
+        
+        </div>
         <div id="rightdiv"> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloremque a ratione velit temporibus minima, laborum error quos unde accusantium dolores natus maiores debitis alias necessitatibus, deleniti harum consectetur. Dignissimos, veniam. </div>
     </div>
    
     <div class="button-container">
         <button id="login-button" class="btn btn-primary">
-            <a href="https://accounts.spotify.com/authorize?client_id=acf7aec2080a4c4691ab10fd73acae30&response_type=code&redirect_uri=http://127.0.0.1:5500/posts.html&scope=playlist-read-private%20user-library-read%20user-top-read" id="login-a">Log in with Spotify</a>
+            <a href="https://accounts.spotify.com/authorize?client_id=acf7aec2080a4c4691ab10fd73acae30&response_type=code&redirect_uri=http://127.0.0.1:5501/posts.html&scope=playlist-read-private%20user-library-read%20user-top-read" id="login-a">Log in with Spotify</a>
         </button>
         <input id="logout-button" type="button" class="btn btn-secondary" onclick="logout()" value="Logout">
     </div>

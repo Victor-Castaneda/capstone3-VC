@@ -200,13 +200,26 @@ app.listen(5500, function () {
   console.log('Server is running on port 5500');
 });
 
-function createPost(){
+function createPost() {
+  const postText = document.getElementById('postText').value;
+
   fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts', {
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'Content-Type': 'application/json'
-    },
-    body: '{\n  "text": "hallo\n"\n}'
+      method: 'POST',
+      headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+          text: postText
+      })
+  })
+  .then(response => response.json())
+  .then(data => {
+      console.log('Success:', data);
+      alert('Post created successfully!');
+  })
+  .catch((error) => {
+      console.error('Error:', error);
+      alert('An error occurred while creating the post.');
   });
 }
