@@ -6,7 +6,7 @@
 }
 
 body {
-    background-image: url("images/sub.jpg");
+    background-image: url("../images/sub.jpg");
     background-size: cover;
     display: flex;
     flex-direction: column;
@@ -29,7 +29,7 @@ h1 {
     max-width: 1200px; /* Limit maximum width */
 }
 
-#leftdiv, #bigdiv, #rightdiv {
+#leftdiv, .bigdiv, #rightdiv {
     height: 200px; /* Adjust height as needed */
     background-color: rgba(0, 0, 0, 0.5);
     justify-content: space-around; 
@@ -42,7 +42,7 @@ h1 {
     max-width: calc(33.33% - 20px); /* Adjust max width with gap */
 }
 
-#bigdiv {
+.bigdiv {
     flex: 2 1 calc(66.66% - 20px); /* Takes up 2/3 of the container width with gap */
     max-width: calc(66.66% - 20px); /* Adjust max width with gap */
 }
@@ -52,9 +52,40 @@ h1 {
     max-width: calc(33.33% - 20px); /* Adjust max width with gap */
 }
 
-#login-button {
+.button-container {
     position: absolute;
     top: 20px;
     right: 20px;
-    z-index: 10; /* Ensure button is above other content */
+    z-index: 10; /* Ensure buttons are above other content */
+    display: flex;
+    flex-direction: column; /* Align buttons vertically */
+    gap: 10px; /* Space between buttons */
+}
+#login-a{
+    color:white;
+    text-decoration: none;
+}
+#vinyl {
+    width: 150px;
+    height: 150px;
+    animation: rotateImage 10s linear infinite;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 25px;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10; /* Ensure buttons are above other content */
+    display: flex;
+    flex-direction: column; /* Align buttons vertically */
+    gap: 10px; /* Space between buttons */
+}
+
+@keyframes rotateImage {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
 }

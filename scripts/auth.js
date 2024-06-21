@@ -17,7 +17,6 @@ function getLoginData () {
     return JSON.parse(loginJSON) || {};
 }
 
-
 // You can use this function to see whether the current visitor is
 // logged in. It returns either `true` or `false`.
 function isLoggedIn () {
@@ -55,7 +54,7 @@ function login (loginData) {
             }
 
             window.localStorage.setItem("login-data", JSON.stringify(loginData));
-            window.location.assign("/posts");  // redirect
+            window.location.assign("posts.html");  // redirect
 
             return loginData;
         });

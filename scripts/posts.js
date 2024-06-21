@@ -199,3 +199,14 @@ app.get('/refresh_token', function (req, res) {
 app.listen(5500, function () {
   console.log('Server is running on port 5500');
 });
+
+function createPost(){
+  fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: '{\n  "text": "hallo\n"\n}'
+  });
+}
