@@ -9,9 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
         crossorigin="anonymous"></script>
-        <link rel="stylesheet" href="css/global.css">
-        <link rel="stylesheet" href="css/posts.css">
-    <!-- icon -->
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/posts.css">
     <link rel="icon" href="/images/sprial.png">
     <title>Maria's Melodies</title>
     <script src="scripts/auth.js"></script>
@@ -29,47 +28,45 @@
     </header>
     <main>
         <div class="container">
-        <div id="leftdiv"> Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique recusandae totam hic consectetur illo illum rerum esse delectus, suscipit non, iste voluptate optio ab nostrum iusto veniam temporibus enim cumque? </div>
-        <div id="tracks" class="bigdiv">
-            
-            <label for="postText">Post Text:</label>
-            <input type="text" id="postText" name="postText" required>
-            <button onclick="createPost()">Create Post</button>
-        
+            <div id="leftdiv"> Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique recusandae totam hic consectetur illo illum rerum esse delectus, suscipit non, iste voluptate optio ab nostrum iusto veniam temporibus enim cumque? </div>
+            <div id="tracks" class="bigdiv">
+                <h3>Post Your Top Spotify Tracks</h3>
+                <div id="result"></div>
+                <div id="postSection" style="display:none;">
+                    <h4>Create Post</h4>
+                    <textarea id="postText" placeholder="Write something..."></textarea><br>
+                    <button id="postButton">Post Top 5 Tracks</button>
+                </div>
+                <div id="postsContainer">
+                    <h3>Recent Posts</h3>
+                    <div id="posts"></div>
+                </div>
+            </div>
+            <div id="rightdiv"> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloremque a ratione velit temporibus minima, laborum error quos unde accusantium dolores natus maiores debitis alias necessitatibus, deleniti harum consectetur. Dignissimos, veniam. </div>
         </div>
-        <div id="rightdiv"> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloremque a ratione velit temporibus minima, laborum error quos unde accusantium dolores natus maiores debitis alias necessitatibus, deleniti harum consectetur. Dignissimos, veniam. </div>
-    </div>
-   
-    <div class="button-container">
-        <button id="login-button" class="btn btn-primary">
-            <a href="https://accounts.spotify.com/authorize?client_id=acf7aec2080a4c4691ab10fd73acae30&response_type=code&redirect_uri=http://127.0.0.1:5501/posts.html&scope=playlist-read-private%20user-library-read%20user-top-read" id="login-a">Log in with Spotify</a>
-        </button>
-        <input id="logout-button" type="button" class="btn btn-secondary" onclick="logout()" value="Logout">
-    </div>
-
+        <div class="button-container">
+            <button id="spotify-login-button" class="btn btn-primary">Log in with Spotify</button>
+            <input id="logout-button" type="button" class="btn btn-secondary" onclick="logout()" value="Logout">
+        </div>
+    
     </main>
     <footer></footer>
     <script src="scripts/posts.js"></script>
     <script src="scripts/demo.js"></script>
+    <script src="scripts/cursor.js"></script>
     <script>
+        var originalTitle = document.title;
 
-var originalTitle = document.title;
+        window.onblur = function () {
+            document.title = 'you left :(';
+        };
 
-// Define the onblur event handler
-window.onblur = function () {
-    document.title = 'you left :(';
-};
-
-// Define the onfocus event handler
-window.onfocus = function () {
-    // Set the title to the welcome message
-    document.title = 'WELCOME BACK!!';
-
-    // After a delay, restore the original title
-    setTimeout(function () {
-        document.title = originalTitle;
-    }, 2000); // Adjust the delay (in milliseconds) as needed
-};
+        window.onfocus = function () {
+            document.title = 'WELCOME BACK!!';
+            setTimeout(function () {
+                document.title = originalTitle;
+            }, 2000);
+        };
     </script>
 </body>
 </html>

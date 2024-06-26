@@ -1,13 +1,16 @@
-const clientId = 'acf7aec2080a4c4691ab10fd73acae30'; // Replace with your client ID
-const redirectUri = 'http://localhost:5500/callback'; // Replace with your redirect URI
-const scope = ['user-library-read', "user-top-read"];
+const clientId = 'acf7aec2080a4c4691ab10fd73acae30';
+const redirectUri = 'http://127.0.0.1:5501/posts.html';
+const scope = ['user-library-read', 'user-top-read'];
 
-// Client-side code
-document.getElementById('registerbutton').addEventListener('click', () => {
-    console.log("Register button clicked");
-    const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
-    console.log("Auth URL:", authUrl);
-    window.location.href = authUrl;
+document.addEventListener('DOMContentLoaded', () => {
+    const accessToken = sessionStorage.getItem('spotifyAccessToken');
+    if (accessToken) {
+        updateSpotifyButtonToLogout();
+        fetchTopTracks(accessToken);
+    } else {
+        updateSpotifyButtonToLogin();
+    }
+    fetchPosts();
 });
 
 window.addEventListener('load', () => {
@@ -16,210 +19,137 @@ window.addEventListener('load', () => {
     const accessToken = params.get('access_token');
 
     if (accessToken) {
-        console.log("Access Token:", accessToken);
-        // Store access token in session storage
         sessionStorage.setItem('spotifyAccessToken', accessToken);
-        // Redirect to posts.html without the fragment
-        window.location.href = 'posts.html';
+        updateSpotifyButtonToLogout();
+        fetchTopTracks(accessToken);
+    } else {
+        const storedAccessToken = sessionStorage.getItem('spotifyAccessToken');
+        if (storedAccessToken) {
+            updateSpotifyButtonToLogout();
+            fetchTopTracks(storedAccessToken);
+        } else {
+            updateSpotifyButtonToLogin();
+        }
     }
 });
 
-// Server-side code (assuming you're using Express.js)
-const express = require('express');
-const app = express();
-const path = require('path');
-
-app.use(express.static(__dirname)); // Serve static files from the current directory
-
-app.get('/callback', (req, res) => {
-    // Handle callback logic here
-    res.sendFile(path.join(__dirname, 'posts.html')); // Serve posts.html from the current directory
-});
-
-// Other routes and server configurations...
-
-const PORT = process.env.PORT || 5500;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
-const express = require('express'); // Express web server framework
-const request = require('request');
-// const axios = require("axios"); // "Request" library
-// const bodyParser = require("body-parser");
-// const cors = require("cors");
-const querystring = require('querystring');
-const cookieParser = require('cookie-parser');
-const fs = require('fs');
-const jwt = require('jsonwebtoken');
-// const https = require("https");
-// const exphbs = require("express-handlebars");
-const cors = require('cors');
-// const { config } = require("./config");
-require('dotenv').config();
-
-const client_id = process.env.clientID; // Your client id
-const client_secret = process.env.clientSecret; // Your secret
-const privateKey = fs.readFileSync('AuthKey_A8FKGGUQP3.p8').toString();
-const teamId = process.env.teamId;
-const keyId = process.env.keyId;
-
-var redirect_uri = process.env.redirect_uri || 'http://localhost:5500/callback'; // Your redirect uri
-// var redirect_uri = "http://localhost:5500/callback";
-/**
- * Generates a random string containing numbers and letters
- * @param  {number} length The length of the string
- * @return {string} The generated stringh
- */
-var generateRandomString = function (length) {
-  var text = '';
-  var possible =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-  for (var i = 0; i < length; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-  }
-  return text;
-};
-
-var stateKey = 'spotify_auth_state';
-
-app
-  .use(express.static(__dirname + '/public'))
-  .use(cors())
-  .use(cookieParser());
-
-app.get('/login', function (req, res) {
-  var state = generateRandomString(16);
-  res.cookie(stateKey, state);
-
-  // your application requests authorization
-  // user-read-private & user-read-email used to get current user info
-  // user-top-read used to get top track info
-  var scope =
-    'user-read-private user-read-email user-top-read playlist-modify-public';
-  res.redirect(
-    'https://accounts.spotify.com/authorize?' +
-      querystring.stringify({
-        response_type: 'code',
-        client_id: client_id,
-        scope: scope,
-        redirect_uri: redirect_uri,
-        state: state,
-      })
-  );
-});
-
-app.get('/callback', function (req, res) {
-  // your application requests refresh and access tokens
-  // after checking the state parameter
-
-  var code = req.query.code || null;
-  var state = req.query.state || null;
-  var storedState = req.cookies ? req.cookies[stateKey] : null;
-
-  if (state === null || state !== storedState) {
-    res.redirect(
-      '/#' +
-        querystring.stringify({
-          error: 'state_mismatch',
-        })
-    );
-  } else {
-    res.clearCookie(stateKey);
-    var authOptions = {
-      url: 'https://accounts.spotify.com/api/token',
-      form: {
-        code: code,
-        redirect_uri: redirect_uri,
-        grant_type: 'authorization_code',
-      },
-      headers: {
-        Authorization:
-          'Basic ' +
-          new Buffer(client_id + ':' + client_secret).toString('base64'),
-      },
-      json: true,
-    };
-
-    request.post(authOptions, function (error, response, body) {
-      if (!error && response.statusCode === 200) {
-        access_token = body.access_token;
-        var access_token = body.access_token,
-          refresh_token = body.refresh_token;
-
-        res.redirect(
-          '/#' +
-            querystring.stringify({
-              client: 'spotify',
-              access_token: access_token,
-              refresh_token: refresh_token,
-            })
-        );
-        // res.redirect("/spotify");
-        // console.log(retrieveTracksSpotify(access_token, "short_term", 1, "LAST MONTH"));
-        // res.render("spotify", {
-        //   shortTerm: retrieveTracksSpotify(access_token, "short_term", 1, "LAST MONTH"),
-        //   mediumTerm: retrieveTracksSpotify(access_token, "medium_term", 2, "LAST 6 MONTHS"),
-        //   longTerm: retrieveTracksSpotify(access_token, "long_term", 3, "ALL TIME")
-        // });
-      } else {
-        res.send('There was an error during authentication.');
-      }
+function fetchTopTracks(token) {
+    fetch('https://api.spotify.com/v1/me/top/tracks?limit=5', {
+        headers: {
+            'Authorization': 'Bearer ' + token
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayTopTracks(data);
+    })
+    .catch(error => {
+        console.error('Error:', error);
     });
-  }
-});
+}
 
-app.get('/refresh_token', function (req, res) {
-  // requesting access token from refresh token
-  var refresh_token = req.query.refresh_token;
-  var authOptions = {
-    url: 'https://accounts.spotify.com/api/token',
-    headers: {
-      Authorization:
-        'Basic ' +
-        new Buffer(client_id + ':' + client_secret).toString('base64'),
-    },
-    form: {
-      grant_type: 'refresh_token',
-      refresh_token: refresh_token,
-    },
-    json: true,
-  };
+function displayTopTracks(data) {
+    if (data.items) {
+        const tracks = data.items.map(track => `${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`).join('<br>');
+        document.getElementById('result').innerHTML = '<h2>Top 5 Tracks</h2>' + tracks;
+        document.getElementById('postSection').style.display = 'block';
 
-  request.post(authOptions, function (error, response, body) {
-    if (!error && response.statusCode === 200) {
-      var access_token = body.access_token;
-      res.send({
-        access_token: access_token,
-      });
+        document.getElementById('postButton').onclick = function() {
+            const postText = document.getElementById('postText').value;
+            const fullPostText = postText + '<br><br>' + tracks;
+            createPost(fullPostText);
+        };
+    } else {
+        document.getElementById('result').innerText = 'Failed to fetch top tracks';
     }
-  });
-});
+}
 
-app.listen(5500, function () {
-  console.log('Server is running on port 5500');
-});
+function createPost(text) {
+    const loginData = getLoginData();
+    fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts', {
+        method: 'POST',
+        headers: {
+            'accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${loginData.token}`
+        },
+        body: JSON.stringify({
+            text: text
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        alert('Post created successfully!');
+        fetchPosts();
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+        alert('An error occurred while creating the post.');
+    });
+}
 
-function createPost() {
-  const postText = document.getElementById('postText').value;
+function fetchPosts() {
+    fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts?limit=15&offset=5', {
+        headers: {
+            'accept': 'application/json',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkVsR2F0bzU3IiwiaWF0IjoxNzE5NDE5OTczLCJleHAiOjE3MTk1MDYzNzN9.gxauwLzxi8175BSfV9y2HPB0gV502_HX1fEa2xalRr0'
+        }
+    })
+    .then(response => response.json())
+    .then(result => displayPosts(result))
+    .catch(error => console.error('Error:', error));
+}
 
-  fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts', {
-      method: 'POST',
-      headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-          text: postText
-      })
-  })
-  .then(response => response.json())
-  .then(data => {
-      console.log('Success:', data);
-      alert('Post created successfully!');
-  })
-  .catch((error) => {
-      console.error('Error:', error);
-      alert('An error occurred while creating the post.');
-  });
+function displayPosts(postData) {
+    const postsContainer = document.getElementById('posts');
+    postsContainer.innerHTML = '';
+
+    if (postData.length) {
+        postData.forEach(post => {
+            const postElement = document.createElement('div');
+            postElement.className = 'post';
+            postElement.innerHTML = `
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">${post.username}</h5>
+                        <p class="card-text">${post.text}</p>
+                        <p class="card-text"><small class="text-muted">${new Date(post.createdAt).toLocaleString()}</small></p>
+                    </div>
+                </div>
+            `;
+            postsContainer.appendChild(postElement);
+        });
+    } else {
+        postsContainer.innerText = 'No posts found.';
+    }
+}
+
+function updateSpotifyButtonToLogin() {
+    const spotifyLoginButton = document.getElementById('spotify-login-button');
+    spotifyLoginButton.innerHTML = 'Log in with Spotify';
+    spotifyLoginButton.className = 'btn btn-primary';
+    spotifyLoginButton.onclick = function() {
+        window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+    };
+}
+
+function updateSpotifyButtonToLogout() {
+    const spotifyLoginButton = document.getElementById('spotify-login-button');
+    spotifyLoginButton.innerHTML = 'Log out of Spotify';
+    spotifyLoginButton.className = 'btn btn-primary';
+    spotifyLoginButton.onclick = function() {
+        sessionStorage.removeItem('spotifyAccessToken');
+        updateSpotifyButtonToLogin();
+        document.getElementById('result').innerText = '';
+        document.getElementById('postSection').style.display = 'none';
+    };
+}
+
+function getLoginData() {
+    // Implement this function to return login data including token
+    // Example:
+    return {
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkVsR2F0bzU3IiwiaWF0IjoxNzE5NDE5OTczLCJleHAiOjE3MTk1MDYzNzN9.gxauwLzxi8175BSfV9y2HPB0gV502_HX1fEa2xalRr0'
+    };
 }

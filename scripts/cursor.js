@@ -205,19 +205,6 @@ function create_star(x, y, probability = 1.0) {
         return;
     }
 
-    // get a color (for the star)
-    function get_random_color() {
-
-        let c = [];
-        c[0] = 255;
-        c[1] = Math.floor(Math.random() * 256);
-        c[2] = Math.floor(Math.random() * (256 - c[1] / 2));
-        c.sort(function () {
-            return (0.5 - Math.random());
-        });
-        return ("rgb(" + c[0] + ", " + c[1] + ", " + c[2] + ")");
-    }
-
     // which star index do we want to use (either a blank index, or the star closest to dying)
     let min_lifetime = sparkle_lifetime * 2 + 1;
     let min_index = NaN;
@@ -245,8 +232,8 @@ function create_star(x, y, probability = 1.0) {
         star_y[min_index] = y;
         star[min_index].style.top = y + "px";
         star[min_index].style.clip = "rect(0px, 5px, 5px, 0px)";
-        star[min_index].childNodes[0].style.backgroundColor = "#730202";
-            star[min_index].childNodes[1].style.backgroundColor = "#730202";
+        star[min_index].childNodes[0].style.backgroundColor = "#FFFFFF";  // Change to white
+        star[min_index].childNodes[1].style.backgroundColor = "#FFFFFF";  // Change to white
         star[min_index].style.visibility = "visible";
         return min_index
     }
