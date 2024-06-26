@@ -1,8 +1,88 @@
 const clientId = 'acf7aec2080a4c4691ab10fd73acae30';
+const clientSecret = '41de33a206f943058a9d9dd431e97770';
 const redirectUri = 'http://127.0.0.1:5501/posts.html';
-const scope = ['user-library-read', 'user-top-read'];
+const scope = ['user-library-read', 'user-top-read', 'ugc-image-upload', 'user-read-recently-played'];
 
 document.addEventListener('DOMContentLoaded', () => {
+    initEventListeners();
+    loadSpotifyToken();
+    fetchPosts();
+    setupSpotifyLoginButton();
+    fetchAndUpdateProfileInfo();
+});
+
+function initEventListeners() {
+    document.getElementById('top-artists-button').addEventListener('click', fetchTopArtists);
+    document.getElementById('top-songs-button').addEventListener('click', fetchTopSongs);
+    document.getElementById('top-genres-button').addEventListener('click', fetchTopGenres);
+    document.getElementById('postButton').onclick = createPostWithTracks;
+}
+
+function fetchTopArtists() {
+    const token = sessionStorage.getItem('spotifyAccessToken');
+    fetchTop5Spotify('artists', token);
+}
+
+function fetchTopSongs() {
+    const token = sessionStorage.getItem('spotifyAccessToken');
+    fetchTop5Spotify('tracks', token);
+}
+
+function fetchTopGenres() {
+    alert('Spotify API does not support fetching top genres directly.');
+}
+
+function fetchTop5Spotify(type, token) {
+    let endpoint = '';
+    if (type === 'artists') {
+        endpoint = 'https://api.spotify.com/v1/me/top/artists?limit=5';
+    } else if (type === 'tracks') {
+        endpoint = 'https://api.spotify.com/v1/me/top/tracks?limit=5';
+    }
+
+    fetch(endpoint, {
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        displayTop5(data, type);
+    })
+    .catch(error => console.error(`Error fetching top ${type} from Spotify:`, error));
+}
+
+function displayTop5(data, type) {
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = ''; // Clear previous results
+
+    if (!data.items) {
+        resultDiv.innerText = 'No data found.';
+        return;
+    }
+
+    if (type === 'artists') {
+        const artists = data.items.slice(0, 5).map(artist => {
+            const imageUrl = artist.images && artist.images.length > 0 ? artist.images[0].url : 'images/maria.jpg';
+            const genres = artist.genres && artist.genres.length > 0 ? artist.genres.join(', ') : 'No genres available';
+            return `
+                <div class="artist">
+                    <h3>${artist.name}</h3>
+                    <img src="${imageUrl}" alt="${artist.name}" height="160" width="160">
+                    <p>Genres: ${genres}</p>
+                    <p>Popularity: ${artist.popularity}</p>
+                    <a href="${artist.external_urls.spotify}" target="_blank">Listen on Spotify</a>
+                </div>
+            `;
+        }).join('');
+        resultDiv.innerHTML = '<h2>Top 5 Artists</h2>' + artists;
+    } else if (type === 'tracks') {
+        const tracks = data.items.map(track => `${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`).join('<br>');
+        resultDiv.innerHTML = '<h2>Top 5 Tracks</h2>' + tracks;
+    }
+}
+
+function loadSpotifyToken() {
     const accessToken = sessionStorage.getItem('spotifyAccessToken');
     if (accessToken) {
         updateSpotifyButtonToLogout();
@@ -10,8 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         updateSpotifyButtonToLogin();
     }
-    fetchPosts();
-});
+}
 
 window.addEventListener('load', () => {
     const hash = window.location.hash.substring(1);
@@ -41,27 +120,90 @@ function fetchTopTracks(token) {
     })
     .then(response => response.json())
     .then(data => {
-        displayTopTracks(data);
+        displayTop5(data, 'tracks');
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Error fetching top tracks:', error);
     });
 }
 
-function displayTopTracks(data) {
-    if (data.items) {
-        const tracks = data.items.map(track => `${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`).join('<br>');
-        document.getElementById('result').innerHTML = '<h2>Top 5 Tracks</h2>' + tracks;
-        document.getElementById('postSection').style.display = 'block';
-
-        document.getElementById('postButton').onclick = function() {
-            const postText = document.getElementById('postText').value;
-            const fullPostText = postText + '<br><br>' + tracks;
-            createPost(fullPostText);
+function setupSpotifyLoginButton() {
+    const loginData = getLoginData();
+    const spotifyLoginButton = document.getElementById('spotify-login-button');
+    if (loginData) {
+        spotifyLoginButton.textContent = 'Logout from Spotify';
+        spotifyLoginButton.onclick = () => {
+            logout();
         };
     } else {
-        document.getElementById('result').innerText = 'Failed to fetch top tracks';
+        spotifyLoginButton.textContent = 'Log in with Spotify';
+        spotifyLoginButton.onclick = () => {
+            window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope.join(' '))}`;
+        };
     }
+}
+
+function displayPosts(posts) {
+    const postsContainer = document.getElementById('posts');
+    postsContainer.innerHTML = '';
+
+    posts.forEach(post => {
+        const postCard = document.createElement('div');
+        postCard.className = 'card mb-3';
+        postCard.innerHTML = `
+            <div class="card-body">
+                <h5 class="card-title">${post.username}</h5>
+                <p class="card-text">${post.text}</p>
+                <p class="card-text"><small class="text-muted">${new Date(post.createdAt).toLocaleString()}</small></p>
+                <button class="btn btn-outline-primary like-button" data-post-id="${post._id}"><i class="bi bi-heart"></i> <span class="like-count">${post.likes.length}</span></button>
+            </div>
+        `;
+        postsContainer.appendChild(postCard);
+    });
+
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            toggleLike(postId, this);
+        });
+    });
+}
+
+function toggleLike(postId, button) {
+    const loginData = getLoginData();
+    const token = loginData.token;
+    const likeCountSpan = button.querySelector('.like-count');
+    const isLiked = button.classList.contains('liked');
+    const method = isLiked ? 'DELETE' : 'POST';
+
+    fetch(`http://microbloglite.us-east-2.elasticbeanstalk.com/api/likes/${isLiked ? postId : ''}`, {
+        method: method,
+        headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            postId: postId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const likeCount = parseInt(likeCountSpan.textContent);
+            likeCountSpan.textContent = isLiked ? likeCount - 1 : likeCount + 1;
+            button.classList.toggle('liked');
+        } else {
+            console.error('Error toggling like:', data.message);
+        }
+    })
+    .catch(error => console.error('Error toggling like:', error));
+}
+
+function createPostWithTracks() {
+    const postText = document.getElementById('postText').value;
+    const fullPostText = postText + '<br><br>' + tracks;
+    createPost(fullPostText);
 }
 
 function createPost(text) {
@@ -90,66 +232,123 @@ function createPost(text) {
 }
 
 function fetchPosts() {
-    fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts?limit=15&offset=5', {
+    fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts?limit=15&offset=0', {
         headers: {
             'accept': 'application/json',
             'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkVsR2F0bzU3IiwiaWF0IjoxNzE5NDE5OTczLCJleHAiOjE3MTk1MDYzNzN9.gxauwLzxi8175BSfV9y2HPB0gV502_HX1fEa2xalRr0'
         }
     })
-    .then(response => response.json())
-    .then(result => displayPosts(result))
-    .catch(error => console.error('Error:', error));
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        displayPosts(data);
+    })
+    .catch(error => {
+        console.error('Error fetching posts:', error);
+        // Optionally, you can add UI feedback for the user:
+        const postsContainer = document.getElementById('posts');
+        postsContainer.innerHTML = '<p>Failed to fetch posts. Please try again later.</p>';
+    });
 }
+function createPostWithTracks() {
+    const postText = document.getElementById('postText').value;
+    let tracksText = '';
 
-function displayPosts(postData) {
-    const postsContainer = document.getElementById('posts');
-    postsContainer.innerHTML = '';
+    // Check if fetching top tracks or artists
+    const token = sessionStorage.getItem('spotifyAccessToken');
+    const fetchType = document.querySelector('input[name="fetch-type"]:checked').value; // Assuming you have radio buttons to select 'tracks' or 'artists'
 
-    if (postData.length) {
-        postData.forEach(post => {
-            const postElement = document.createElement('div');
-            postElement.className = 'post';
-            postElement.innerHTML = `
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title">${post.username}</h5>
-                        <p class="card-text">${post.text}</p>
-                        <p class="card-text"><small class="text-muted">${new Date(post.createdAt).toLocaleString()}</small></p>
-                    </div>
-                </div>
-            `;
-            postsContainer.appendChild(postElement);
-        });
-    } else {
-        postsContainer.innerText = 'No posts found.';
+    if (fetchType === 'tracks') {
+        fetchTop5Spotify('tracks', token)
+            .then(() => {
+                // Construct text for top tracks
+                if (topTracks.length > 0) {
+                    tracksText = '<br><br><strong>Top 5 Tracks:</strong><br>';
+                    topTracks.forEach((track, index) => {
+                        tracksText += `${index + 1}. ${track.name} by ${track.artists.map(artist => artist.name).join(', ')}<br>`;
+                    });
+                }
+
+                const fullPostText = postText + tracksText;
+                createPost(fullPostText);
+            })
+            .catch(error => {
+                console.error('Error fetching top tracks:', error);
+                alert('Error fetching top tracks. Please try again later.');
+            });
+    } else if (fetchType === 'artists') {
+        fetchTop5Spotify('artists', token)
+            .then(() => {
+                // Construct text for top artists
+                if (topArtists.length > 0) {
+                    tracksText = '<br><br><strong>Top 5 Artists:</strong><br>';
+                    topArtists.forEach((artist, index) => {
+                        const imageUrl = artist.images && artist.images.length > 0 ? artist.images[0].url : 'images/maria.jpg';
+                        const genres = artist.genres && artist.genres.length > 0 ? artist.genres.join(', ') : 'No genres available';
+                        tracksText += `
+                            <div class="artist">
+                                <h3>${artist.name}</h3>
+                                <img src="${imageUrl}" alt="${artist.name}" height="160" width="160">
+                                <p>Genres: ${genres}</p>
+                                <p>Popularity: ${artist.popularity}</p>
+                                <a href="${artist.external_urls.spotify}" target="_blank">Listen on Spotify</a>
+                            </div><br>`;
+                    });
+                }
+
+                const fullPostText = postText + tracksText;
+                createPost(fullPostText);
+            })
+            .catch(error => {
+                console.error('Error fetching top artists:', error);
+                alert('Error fetching top artists. Please try again later.');
+            });
     }
 }
 
+
 function updateSpotifyButtonToLogin() {
     const spotifyLoginButton = document.getElementById('spotify-login-button');
-    spotifyLoginButton.innerHTML = 'Log in with Spotify';
-    spotifyLoginButton.className = 'btn btn-primary';
-    spotifyLoginButton.onclick = function() {
-        window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope)}`;
+    spotifyLoginButton.textContent = 'Log in with Spotify';
+    spotifyLoginButton.onclick = () => {
+        window.location.href = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scope.join(' '))}`;
     };
 }
 
 function updateSpotifyButtonToLogout() {
     const spotifyLoginButton = document.getElementById('spotify-login-button');
-    spotifyLoginButton.innerHTML = 'Log out of Spotify';
-    spotifyLoginButton.className = 'btn btn-primary';
-    spotifyLoginButton.onclick = function() {
-        sessionStorage.removeItem('spotifyAccessToken');
-        updateSpotifyButtonToLogin();
-        document.getElementById('result').innerText = '';
-        document.getElementById('postSection').style.display = 'none';
+    spotifyLoginButton.textContent = 'Logout from Spotify';
+    spotifyLoginButton.onclick = () => {
+        logout();
     };
 }
 
+function logout() {
+    sessionStorage.removeItem('spotifyAccessToken');
+    window.location.href = redirectUri;
+}
+
 function getLoginData() {
-    // Implement this function to return login data including token
-    // Example:
-    return {
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkVsR2F0bzU3IiwiaWF0IjoxNzE5NDE5OTczLCJleHAiOjE3MTk1MDYzNzN9.gxauwLzxi8175BSfV9y2HPB0gV502_HX1fEa2xalRr0'
-    };
+    return JSON.parse(localStorage.getItem('login-data'));
+}
+
+function fetchAndUpdateProfileInfo() {
+    const loginData = getLoginData();
+    if (loginData) {
+        fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/me', {
+            headers: {
+                'accept': 'application/json',
+                'Authorization': `Bearer ${loginData.token}`
+            }
+        })
+        .then(response => response.json())
+        .then(user => {
+            document.getElementById('profileName').textContent = user.username;
+        })
+        .catch(error => console.error('Error fetching profile info:', error));
+    }
 }

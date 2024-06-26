@@ -4,16 +4,14 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-        crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/posts.css">
     <link rel="icon" href="/images/sprial.png">
     <title>Maria's Melodies</title>
     <script src="scripts/auth.js"></script>
+    <script src="scripts/posts.js"></script>
     <script>
         if (isLoggedIn() === false) window.location.replace("/");
     </script>
@@ -22,51 +20,64 @@
 <audio loop="true" id="audio">
     <source src="unmilion.mp3" type="audio/mpeg">
 </audio>
-    <header>
-        <img id="vinyl" src="images/vinyl.webp" >
-        <h1>POSTS PAGE</h1>
-    </header>
-    <main>
-        <div class="container">
-            <div id="leftdiv"> Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique recusandae totam hic consectetur illo illum rerum esse delectus, suscipit non, iste voluptate optio ab nostrum iusto veniam temporibus enim cumque? </div>
-            <div id="tracks" class="bigdiv">
-                <h3>Post Your Top Spotify Tracks</h3>
-                <div id="result"></div>
-                <div id="postSection" style="display:none;">
-                    <h4>Create Post</h4>
-                    <textarea id="postText" placeholder="Write something..."></textarea><br>
-                    <button id="postButton">Post Top 5 Tracks</button>
-                </div>
-                <div id="postsContainer">
-                    <h3>Recent Posts</h3>
-                    <div id="posts"></div>
-                </div>
+<header>
+    <img id="vinyl" src="images/vinyl.webp" >
+    <h1>POSTS PAGE</h1>
+</header>
+<main>
+    <div class="container">
+        <div id="leftdiv">
+            <button href="profile.html"> Profile</button>
+        </div>
+        <div id="tracks" class="bigdiv">
+            <h3>Post Your Top Spotify Tracks or Artists</h3>
+            <div id="result"></div>
+            <div id="postSection" style="display:none;">
+                <h4>Create Post</h4>
+                <textarea id="postText" placeholder="Write something..."></textarea><br>
+                <input type="radio" id="fetchTracks" name="fetch-type" value="tracks" checked>
+                <label for="fetchTracks">Fetch Top 5 Tracks</label>
+                <input type="radio" id="fetchArtists" name="fetch-type" value="artists">
+                <label for="fetchArtists">Fetch Top 5 Artists</label><br><br>
+                <button id="postButton">Post Top 5</button>
             </div>
-            <div id="rightdiv"> Lorem ipsum dolor, sit amet consectetur adipisicing elit. Doloremque a ratione velit temporibus minima, laborum error quos unde accusantium dolores natus maiores debitis alias necessitatibus, deleniti harum consectetur. Dignissimos, veniam. </div>
+        
+            <div id="postsContainer">
+                <h3>Recent Posts</h3>
+                <div id="posts"></div>
+            </div>
         </div>
-        <div class="button-container">
-            <button id="spotify-login-button" class="btn btn-primary">Log in with Spotify</button>
-            <input id="logout-button" type="button" class="btn btn-secondary" onclick="logout()" value="Logout">
+        <div id="rightdiv"> 
+            <h5>What do you want to share?</h5>
+            <div class="button-container2">
+                <ul>
+                    <li><button id="top-artists-button" class="btn btn-primary">Top 5 Artists</button></li>
+                    <li><button id="top-songs-button" class="btn btn-primary">Top 5 Songs</button></li>
+                    <li><button id="top-genres-button" class="btn btn-primary">Top 5 Genres</button></li>
+                </ul>
+            </div>
         </div>
-    
-    </main>
-    <footer></footer>
-    <script src="scripts/posts.js"></script>
-    <script src="scripts/demo.js"></script>
-    <script src="scripts/cursor.js"></script>
-    <script>
-        var originalTitle = document.title;
+    </div>
+    <div class="button-container">
+        <button id="spotify-login-button" class="btn btn-primary">Log in with Spotify</button>
+        <input id="logout-button" type="button" class="btn btn-secondary" onclick="logout()" value="Logout">
+    </div>
+</main>
+<footer></footer>
+<script src="scripts/cursor.js"></script>
+<script>
+    var originalTitle = document.title;
 
-        window.onblur = function () {
-            document.title = 'you left :(';
-        };
+    window.onblur = function () {
+        document.title = 'you left :(';
+    };
 
-        window.onfocus = function () {
-            document.title = 'WELCOME BACK!!';
-            setTimeout(function () {
-                document.title = originalTitle;
-            }, 2000);
-        };
-    </script>
+    window.onfocus = function () {
+        document.title = 'WELCOME BACK!!';
+        setTimeout(function () {
+            document.title = originalTitle;
+        }, 2000);
+    };
+</script>
 </body>
 </html>

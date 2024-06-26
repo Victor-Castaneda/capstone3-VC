@@ -1,3 +1,5 @@
+/* posts.css */
+
 /* Reset default margin and padding */
 * {
     margin: 0;
@@ -61,10 +63,7 @@ h1 {
     flex-direction: column; /* Align buttons vertically */
     gap: 10px; /* Space between buttons */
 }
-#spotify-login-button{
-    color:white;
-    text-decoration: none;
-}
+
 #vinyl {
     width: 150px;
     height: 150px;
@@ -88,4 +87,67 @@ h1 {
     to {
         transform: rotate(360deg);
     }
+}
+
+/* Style for the post cards */
+.post-card {
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.post-card:hover {
+    transform: scale(1.02);
+}
+
+.post-card .card-body {
+    padding: 15px;
+}
+
+.post-card .card-title {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.post-card .card-text {
+    font-size: 14px;
+    color: #555;
+}
+
+.post-card .text-muted {
+    font-size: 12px;
+}
+
+/* Style for the like button */
+.like-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.like-button button {
+    background-color: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.like-button button i {
+    margin-right: 5px;
+}
+
+.like-button .like-count {
+    margin-left: 5px;
+    color: #fff;
+}
+
+/* Style for the buttons */
+.button-container button {
+    margin-right: 10px;
+    margin-bottom: 10px;
 }

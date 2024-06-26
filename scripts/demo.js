@@ -13,7 +13,7 @@ if (!code) {
   populateUI(profile);
 }
 
-export async function redirectToAuthCodeFlow(clientId) {
+async function redirectToAuthCodeFlow(clientId) {
   const verifier = generateCodeVerifier(128);
   const challenge = await generateCodeChallenge(verifier);
 
@@ -23,12 +23,15 @@ export async function redirectToAuthCodeFlow(clientId) {
   params.append("client_id", clientId);
   params.append("response_type", "code");
   params.append("redirect_uri", "http://localhost:5501/callback");
-  params.append("scope", "user-read-private user-read-email");
+  params.append("scope", "user-read-private user-read-email user-library-read user-top-read ugc-image-upload user-read-recently-played");
   params.append("code_challenge_method", "S256");
   params.append("code_challenge", challenge);
 
   document.location = `https://accounts.spotify.com/authorize?${params.toString()}`;
 }
+
+// Other functions and logic follow...
+
 
 function generateCodeVerifier(length) {
   let text = "";
@@ -50,7 +53,7 @@ async function generateCodeChallenge(codeVerifier) {
     .replace(/=+$/, "");
 }
 
-export async function getAccessToken(clientId, code) {
+async function getAccessToken(clientId, code) {
   const verifier = localStorage.getItem("verifier");
 
   const params = new URLSearchParams();
@@ -204,8 +207,4 @@ function populateUI(profile) {
     .setAttribute("href", profile.external_urls.spotify);
   document.getElementById("url").innerText = profile.href;
   document.getElementById("url").setAttribute("href", profile.href);
-}
-
-function createTop5Post(){
-  
 }
