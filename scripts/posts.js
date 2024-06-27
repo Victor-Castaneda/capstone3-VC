@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSpotifyToken();
     fetchPosts();
     setupSpotifyLoginButton();
-    fetchAndUpdateProfileInfo();
 });
 
 function initEventListeners() {
@@ -269,39 +268,17 @@ function updateSpotifyButtonToLogout() {
     const spotifyLoginButton = document.getElementById('spotify-login-button');
     spotifyLoginButton.textContent = 'Logout from Spotify';
     spotifyLoginButton.onclick = () => {
-        logout();
+        Spotifylogout();
     };
 }
 
-function logout() {
+function Spotifylogout() {
     sessionStorage.removeItem('spotifyAccessToken');
     window.location.href = redirectUri;
 }
 
 function getLoginData() {
     return JSON.parse(localStorage.getItem('login-data'));
-}
-
-function fetchAndUpdateProfileInfo() {
-    const loginData = getLoginData();
-    if (loginData) {
-        fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/me', {
-            headers: {
-                'accept': 'application/json',
-                'Authorization': `Bearer ${loginData.token}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Failed to fetch profile info');
-            }
-            return response.json();
-        })
-        .then(user => {
-            document.getElementById('profileName').textContent = user.username;
-        })
-        .catch(error => console.error('Error fetching profile info:', error));
-    }
 }
 
 function displayPosts(posts) {

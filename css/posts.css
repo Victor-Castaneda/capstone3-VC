@@ -214,3 +214,6 @@ h1 {
   background: #FFFFFF; /* white color */
   cursor: pointer; /* cursor on hover */
 }
+#postsContainer{
+    padding-top: 125px;
+}

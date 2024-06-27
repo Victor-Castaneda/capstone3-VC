@@ -1,5 +1,9 @@
 "use strict";
 
+document.addEventListener('DOMContentLoaded', () => {
+fetchAndUpdateProfileInfo();
+});
+
 async function fetchSpotifyUserInfo() {
     try {
       const response = await fetch('https://api.spotify.com/v1/me', {
@@ -35,3 +39,25 @@ async function fetchSpotifyUserInfo() {
 
   // Call the function to fetch Spotify user info when the page loads
   window.onload = fetchSpotifyUserInfo;
+
+  function fetchAndUpdateProfileInfo() {
+    const loginData = getLoginData();
+    if (loginData) {
+        fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/me', {
+            headers: {
+                'accept': 'application/json',
+                'Authorization': `Bearer ${loginData.token}`
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch profile info');
+            }
+            return response.json();
+        })
+        .then(user => {
+            document.getElementById('profileName').textContent = user.username;
+        })
+        .catch(error => console.error('Error fetching profile info:', error));
+    }
+}
