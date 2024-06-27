@@ -194,3 +194,21 @@ h1 {
     margin-right: 10px;
     margin-bottom: 10px;
 }
+.volume-slider {
+    appearance: none; /* removes browser-specific styling */
+    width: 300px; /* width of slider */
+    height: 25px; /* height of slider */
+    outline: none; /* remove outline */
+    border-radius: 50px; /* round corners */
+    margin-top: 40%;
+    transform: rotate(270deg); /* rotate the element */
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none; /* removes browser-specific styling */
+  width: 20px; /* handle width */
+  height: 20px; /* handle height */
+  border-radius: 50%; /* make it circular */
+  background: #FFFFFF; /* white color */
+  cursor: pointer; /* cursor on hover */
+}

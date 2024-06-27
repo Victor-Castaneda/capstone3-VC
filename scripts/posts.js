@@ -147,63 +147,6 @@ function setupSpotifyLoginButton() {
     }
 }
 
-function displayPosts(posts) {
-    const postsContainer = document.getElementById('posts');
-    postsContainer.innerHTML = '';
-
-    posts.forEach(post => {
-        const postCard = document.createElement('div');
-        postCard.className = 'card mb-3';
-        postCard.innerHTML = `
-            <div class="card-body">
-                <h5 class="card-title">${post.username}</h5>
-                <p class="card-text">${post.text}</p>
-                <p class="card-text"><small class="text-muted">${new Date(post.createdAt).toLocaleString()}</small></p>
-                <button class="btn btn-outline-primary like-button" data-post-id="${post._id}"><i class="bi bi-heart"></i> <span class="like-count">${post.likes.length}</span></button>
-            </div>
-        `;
-        postsContainer.appendChild(postCard);
-    });
-
-    document.querySelectorAll('.like-button').forEach(button => {
-        button.addEventListener('click', function() {
-            const postId = this.getAttribute('data-post-id');
-            toggleLike(postId, this);
-        });
-    });
-}
-
-function toggleLike(postId, button) {
-    const loginData = getLoginData();
-    const token = loginData.token;
-    const likeCountSpan = button.querySelector('.like-count');
-    const isLiked = button.classList.contains('liked');
-    const method = isLiked ? 'DELETE' : 'POST';
-
-    fetch(`http://microbloglite.us-east-2.elasticbeanstalk.com/api/likes/${isLiked ? postId : ''}`, {
-        method: method,
-        headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            postId: postId
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const likeCount = parseInt(likeCountSpan.textContent);
-            likeCountSpan.textContent = isLiked ? likeCount - 1 : likeCount + 1;
-            button.classList.toggle('liked');
-        } else {
-            console.error('Error toggling like:', data.message);
-        }
-    })
-    .catch(error => console.error('Error toggling like:', error));
-}
-
 function createPostWithTracks() {
     const postText = document.getElementById('postText').value;
     let tracksText = '';
@@ -349,4 +292,64 @@ function fetchAndUpdateProfileInfo() {
         })
         .catch(error => console.error('Error fetching profile info:', error));
     }
+}
+
+function displayPosts(posts) {
+    const postsContainer = document.getElementById('posts');
+    postsContainer.innerHTML = '';
+
+    posts.forEach(post => {
+        const postCard = document.createElement('div');
+        postCard.className = 'card mb-3';
+        postCard.innerHTML = `
+            <div class="card-body">
+                <h5 class="card-title">${post.username}</h5>
+                <p class="card-text">${post.text}</p>
+                <p class="card-text"><small class="text-muted">${new Date(post.createdAt).toLocaleString()}</small></p>
+                <button class="btn btn-outline-primary like-button ${post.likes.includes(getLoginData().username) ? 'liked' : ''}" data-post-id="${post._id}">
+                    <i class="bi bi-heart"></i> 
+                    <span class="like-count">${post.likes.length}</span>
+                </button>
+            </div>
+        `;
+        postsContainer.appendChild(postCard);
+    });
+
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            toggleLike(postId, this);
+        });
+    });
+}
+
+function toggleLike(postId, button) {
+    const loginData = getLoginData();
+    const token = loginData.token;
+    const likeCountSpan = button.querySelector('.like-count');
+    const isLiked = button.classList.contains('liked');
+    const method = isLiked ? 'DELETE' : 'POST';
+
+    fetch(`http://microbloglite.us-east-2.elasticbeanstalk.com/api/likes/${isLiked ? postId : ''}`, {
+        method: method,
+        headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            postId: postId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const likeCount = parseInt(likeCountSpan.textContent);
+            likeCountSpan.textContent = isLiked ? likeCount - 1 : likeCount + 1;
+            button.classList.toggle('liked');
+        } else {
+            console.error('Error toggling like:', data.message);
+        }
+    })
+    .catch(error => console.error('Error toggling like:', error));
 }
