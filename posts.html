@@ -16,9 +16,6 @@
     </script>
 </head>
 <body>
-<audio loop="true" id="audio">
-    <source src="unmilion.mp3" type="audio/mpeg">
-</audio>
 <header>
     <img id="vinyl" src="images/vinyl.webp" alt="Vinyl">
     <h1>POSTS PAGE</h1>
@@ -63,6 +60,9 @@
         <button id="spotify-login-button" class="btn btn-primary">Log in with Spotify</button>
         <input id="logout-button" type="button" class="btn btn-secondary" onclick="logout()" value="Logout">
     </div>
+    <audio loop="true" id="audio">
+        <source src="BastaYa.mp3" type="audio/mpeg">
+    </audio>
 </main>
 <footer></footer>
 <script src="scripts/cursor.js"></script>
@@ -77,6 +77,27 @@
             document.title = originalTitle;
         }, 2000);
     };
+    document.addEventListener("DOMContentLoaded", function() {
+    var audio = document.getElementById("audio");
+    var volumeSlider = document.getElementById("volume-slider");
+
+    // Set the initial volume
+    audio.volume = volumeSlider.value / 75;
+
+    // Add an event listener to the volume slider
+    volumeSlider.addEventListener("input", function() {
+        audio.volume = this.value / 100;
+    });
+
+    // Play the audio after user interaction
+    function playAudio() {
+        audio.play();
+        document.removeEventListener('click', playAudio);
+    }
+
+    // Add an event listener to start playing the audio on user interaction
+    document.addEventListener('click', playAudio);
+});
 </script>
 </body>
 </html>

@@ -353,3 +353,81 @@ function toggleLike(postId, button) {
     })
     .catch(error => console.error('Error toggling like:', error));
 }
+
+//THIS IS A TEST to see if I can have music from a specific artist to play in the background of my website.
+
+window.onSpotifyWebPlaybackSDKReady = () => {
+    const token = 'your_access_token'; // Replace with the user's access token obtained via OAuth
+  
+    const player = new Spotify.Player({
+      name: 'Web Playback SDK Quick Start Player',
+      getOAuthToken: cb => { cb(token); }
+    });
+  
+    // Error handling
+    player.addListener('initialization_error', ({ message }) => { console.error(message); });
+    player.addListener('authentication_error', ({ message }) => { console.error(message); });
+    player.addListener('account_error', ({ message }) => { console.error(message); });
+    player.addListener('playback_error', ({ message }) => { console.error(message); });
+  
+    // Playback status updates
+    player.addListener('player_state_changed', state => { console.log(state); });
+  
+    // Ready
+    player.addListener('ready', ({ device_id }) => {
+      console.log('Ready with Device ID', device_id);
+  
+      // Replace with The Marías' Spotify artist ID
+      const artistId = '2sSGPbdZJkaSE2AbcGOACx';
+  
+      // Get top tracks of the artist
+      fetch(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        const topTracks = data.tracks.map(track => track.uri);
+        
+        // Play the first track
+        player
+          .connect()
+          .then(() => {
+            player
+              .resume()
+              .then(() => {
+                player
+                  .play({
+                    uris: topTracks
+                  })
+                  .then(() => {
+                    console.log('Playing top tracks');
+                  })
+                  .catch(error => {
+                    console.error('Error playing track:', error);
+                  });
+              })
+              .catch(error => {
+                console.error('Error resuming playback:', error);
+              });
+          })
+          .catch(error => {
+            console.error('Error connecting to player:', error);
+          });
+      })
+      .catch(error => {
+        console.error('Error fetching top tracks:', error);
+      });
+    });
+  
+    // Connect to the player
+    player.connect().then(success => {
+      if (success) {
+        console.log('The Web Playback SDK successfully connected to Spotify!');
+      }
+    }).catch(error => {
+      console.error('Failed to connect to Spotify:', error);
+    });
+  };
