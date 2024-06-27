@@ -159,60 +159,16 @@ function createPostWithTracks() {
         return;
     }
 
-    const token = sessionStorage.getItem('spotifyAccessToken');
-    const fetchType = document.querySelector('input[name="fetch-type"]:checked').value;
-
-    if (fetchType === 'tracks') {
-        fetchTop5Spotify('tracks', token)
-            .then(tracks => {
-                const tracksText = tracks.length > 0 ? '<br><br><strong>Top 5 Tracks:</strong><br>' +
-                    tracks.map((track, index) => `${index + 1}. ${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`).join('<br>') : '';
-
-                const fullPostText = postText + tracksText;
-                createPost(fullPostText); // Call createPost function with combined text
-            })
-            .catch(error => {
-                console.error('Error fetching top tracks:', error);
-                alert('Error fetching top tracks. Please try again later.');
-            });
-    } else if (fetchType === 'artists') {
-        fetchTop5Spotify('artists', token)
-            .then(artists => {
-                const artistsText = artists.length > 0 ? '<br><br><strong>Top 5 Artists:</strong><br>' +
-                    artists.map(artist => {
-                        const imageUrl = artist.images && artist.images.length > 0 ? artist.images[0].url : 'images/maria.jpg';
-                        const genres = artist.genres && artist.genres.length > 0 ? artist.genres.join(', ') : 'No genres available';
-                        return `
-                            <div class="artist">
-                                <h3>${artist.name}</h3>
-                                <img src="${imageUrl}" alt="${artist.name}" height="160" width="160">
-                                <p>Genres: ${genres}</p>
-                                <p>Popularity: ${artist.popularity}</p>
-                                <a href="${artist.external_urls.spotify}" target="_blank">Listen on Spotify</a>
-                            </div><br>`;
-                    }).join('') : '';
-
-                const fullPostText = postText + artistsText;
-                createPost(fullPostText); // Call createPost function with combined text
-            })
-            .catch(error => {
-                console.error('Error fetching top artists:', error);
-                alert('Error fetching top artists. Please try again later.');
-            });
-    }
-}
-
-function createPost(text) {
     const loginData = getLoginData();
     fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts', {
         method: 'POST',
         headers: {
             'accept': 'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${loginData.token}`
+            'Authorization': `Bearer ${loginData.token}`,
+            'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            text: text
+            text: postText
         })
     })
     .then(response => {
@@ -226,17 +182,18 @@ function createPost(text) {
         alert('Post created successfully!');
         fetchPosts(); // Refresh posts after successful creation
     })
-    .catch((error) => {
+    .catch(error => {
         console.error('Error creating post:', error);
         alert('An error occurred while creating the post.');
     });
 }
 
 function fetchPosts() {
+    const loginData = getLoginData();
     fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts?limit=15&offset=0', {
         headers: {
             'accept': 'application/json',
-            'Authorization': `Bearer ${getLoginData().token}`
+            'Authorization': `Bearer ${loginData.token}`
         }
     })
     .then(response => {
@@ -250,12 +207,79 @@ function fetchPosts() {
     })
     .catch(error => {
         console.error('Error fetching posts:', error);
-        // Optionally, you can add UI feedback for the user:
         const postsContainer = document.getElementById('posts');
         postsContainer.innerHTML = '<p>Failed to fetch posts. Please try again later.</p>';
     });
 }
 
+function displayPosts(posts) {
+    const postsContainer = document.getElementById('posts');
+    postsContainer.innerHTML = '';
+
+    posts.forEach(post => {
+        const postCard = document.createElement('div');
+        postCard.className = 'card mb-3';
+        postCard.innerHTML = `
+            <div class="card-body">
+                <h5 class="card-title">${post.username}</h5>
+                <p class="card-text">${post.text}</p>
+                <p class="card-text"><small class="text-muted">${new Date(post.createdAt).toLocaleString()}</small></p>
+                <button class="btn btn-outline-primary like-button ${post.likes.includes(getLoginData().username) ? 'liked' : ''}" data-post-id="${post._id}">
+                    <i class="bi bi-heart"></i> 
+                    <span class="like-count">${post.likes.length}</span>
+                </button>
+            </div>
+        `;
+        postsContainer.appendChild(postCard);
+    });
+
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            toggleLike(postId, this);
+        });
+    });
+}
+
+function getLoginData() {
+    return JSON.parse(localStorage.getItem('login-data'));
+}
+
+function toggleLike(postId, button) {
+    const loginData = getLoginData();
+    const token = loginData.token;
+    const likeCountSpan = button.querySelector('.like-count');
+    const isLiked = button.classList.contains('liked');
+    const method = isLiked ? 'DELETE' : 'POST';
+
+    fetch(`http://microbloglite.us-east-2.elasticbeanstalk.com/api/likes/${isLiked ? postId : ''}`, {
+        method: method,
+        headers: {
+            'accept': 'application/json',
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            postId: postId
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to toggle like');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            const likeCount = parseInt(likeCountSpan.textContent);
+            likeCountSpan.textContent = isLiked ? likeCount - 1 : likeCount + 1;
+            button.classList.toggle('liked');
+        } else {
+            console.error('Error toggling like:', data.message);
+        }
+    })
+    .catch(error => console.error('Error toggling like:', error));
+}
 function updateSpotifyButtonToLogin() {
     const spotifyLoginButton = document.getElementById('spotify-login-button');
     spotifyLoginButton.textContent = 'Log in with Spotify';
