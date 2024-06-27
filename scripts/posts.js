@@ -40,7 +40,7 @@ function fetchTop5Spotify(type, token) {
         endpoint = 'https://api.spotify.com/v1/me/top/tracks?limit=5';
     }
 
-    fetch(endpoint, {
+    return fetch(endpoint, {
         headers: {
             'Authorization': `Bearer ${token}`
         }
@@ -48,8 +48,12 @@ function fetchTop5Spotify(type, token) {
     .then(response => response.json())
     .then(data => {
         displayTop5(data, type);
+        return data.items;
     })
-    .catch(error => console.error(`Error fetching top ${type} from Spotify:`, error));
+    .catch(error => {
+        console.error(`Error fetching top ${type} from Spotify:`, error);
+        throw error;
+    });
 }
 
 function displayTop5(data, type) {
@@ -202,8 +206,58 @@ function toggleLike(postId, button) {
 
 function createPostWithTracks() {
     const postText = document.getElementById('postText').value;
-    const fullPostText = postText + '<br><br>' + tracks;
-    createPost(fullPostText);
+    let tracksText = '';
+
+    // Check if fetching top tracks or artists
+    const token = sessionStorage.getItem('spotifyAccessToken');
+    const fetchType = document.querySelector('input[name="fetch-type"]:checked').value; // Assuming you have radio buttons to select 'tracks' or 'artists'
+
+    if (fetchType === 'tracks') {
+        fetchTop5Spotify('tracks', token)
+            .then(tracks => {
+                // Construct text for top tracks
+                if (tracks.length > 0) {
+                    tracksText = '<br><br><strong>Top 5 Tracks:</strong><br>';
+                    tracks.forEach((track, index) => {
+                        tracksText += `${index + 1}. ${track.name} by ${track.artists.map(artist => artist.name).join(', ')}<br>`;
+                    });
+                }
+
+                const fullPostText = postText + tracksText;
+                createPost(fullPostText);
+            })
+            .catch(error => {
+                console.error('Error fetching top tracks:', error);
+                alert('Error fetching top tracks. Please try again later.');
+            });
+    } else if (fetchType === 'artists') {
+        fetchTop5Spotify('artists', token)
+            .then(artists => {
+                // Construct text for top artists
+                if (artists.length > 0) {
+                    tracksText = '<br><br><strong>Top 5 Artists:</strong><br>';
+                    artists.forEach((artist, index) => {
+                        const imageUrl = artist.images && artist.images.length > 0 ? artist.images[0].url : 'images/maria.jpg';
+                        const genres = artist.genres && artist.genres.length > 0 ? artist.genres.join(', ') : 'No genres available';
+                        tracksText += `
+                            <div class="artist">
+                                <h3>${artist.name}</h3>
+                                <img src="${imageUrl}" alt="${artist.name}" height="160" width="160">
+                                <p>Genres: ${genres}</p>
+                                <p>Popularity: ${artist.popularity}</p>
+                                <a href="${artist.external_urls.spotify}" target="_blank">Listen on Spotify</a>
+                            </div><br>`;
+                    });
+                }
+
+                const fullPostText = postText + tracksText;
+                createPost(fullPostText);
+            })
+            .catch(error => {
+                console.error('Error fetching top artists:', error);
+                alert('Error fetching top artists. Please try again later.');
+            });
+    }
 }
 
 function createPost(text) {
@@ -254,62 +308,6 @@ function fetchPosts() {
         postsContainer.innerHTML = '<p>Failed to fetch posts. Please try again later.</p>';
     });
 }
-function createPostWithTracks() {
-    const postText = document.getElementById('postText').value;
-    let tracksText = '';
-
-    // Check if fetching top tracks or artists
-    const token = sessionStorage.getItem('spotifyAccessToken');
-    const fetchType = document.querySelector('input[name="fetch-type"]:checked').value; // Assuming you have radio buttons to select 'tracks' or 'artists'
-
-    if (fetchType === 'tracks') {
-        fetchTop5Spotify('tracks', token)
-            .then(() => {
-                // Construct text for top tracks
-                if (topTracks.length > 0) {
-                    tracksText = '<br><br><strong>Top 5 Tracks:</strong><br>';
-                    topTracks.forEach((track, index) => {
-                        tracksText += `${index + 1}. ${track.name} by ${track.artists.map(artist => artist.name).join(', ')}<br>`;
-                    });
-                }
-
-                const fullPostText = postText + tracksText;
-                createPost(fullPostText);
-            })
-            .catch(error => {
-                console.error('Error fetching top tracks:', error);
-                alert('Error fetching top tracks. Please try again later.');
-            });
-    } else if (fetchType === 'artists') {
-        fetchTop5Spotify('artists', token)
-            .then(() => {
-                // Construct text for top artists
-                if (topArtists.length > 0) {
-                    tracksText = '<br><br><strong>Top 5 Artists:</strong><br>';
-                    topArtists.forEach((artist, index) => {
-                        const imageUrl = artist.images && artist.images.length > 0 ? artist.images[0].url : 'images/maria.jpg';
-                        const genres = artist.genres && artist.genres.length > 0 ? artist.genres.join(', ') : 'No genres available';
-                        tracksText += `
-                            <div class="artist">
-                                <h3>${artist.name}</h3>
-                                <img src="${imageUrl}" alt="${artist.name}" height="160" width="160">
-                                <p>Genres: ${genres}</p>
-                                <p>Popularity: ${artist.popularity}</p>
-                                <a href="${artist.external_urls.spotify}" target="_blank">Listen on Spotify</a>
-                            </div><br>`;
-                    });
-                }
-
-                const fullPostText = postText + tracksText;
-                createPost(fullPostText);
-            })
-            .catch(error => {
-                console.error('Error fetching top artists:', error);
-                alert('Error fetching top artists. Please try again later.');
-            });
-    }
-}
-
 
 function updateSpotifyButtonToLogin() {
     const spotifyLoginButton = document.getElementById('spotify-login-button');
