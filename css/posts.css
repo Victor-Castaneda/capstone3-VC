@@ -65,6 +65,8 @@ h1 {
     box-sizing: border-box;
     flex: 2; /* Takes up 2/3 of the container width with gap */
     max-width: calc(66.66% - 20px); /* Adjust max width with gap */
+    max-height: 90vh;
+    overflow-y: scroll;
 }
 
 #posts {

@@ -1,5 +1,4 @@
 const clientId = 'acf7aec2080a4c4691ab10fd73acae30';
-const clientSecret = '41de33a206f943058a9d9dd431e97770';
 const redirectUri = 'http://127.0.0.1:5501/posts.html';
 const scope = ['user-library-read', 'user-top-read', 'ugc-image-upload', 'user-read-recently-played'];
 
@@ -14,8 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initEventListeners() {
     document.getElementById('top-artists-button').addEventListener('click', fetchTopArtists);
     document.getElementById('top-songs-button').addEventListener('click', fetchTopSongs);
-    document.getElementById('top-genres-button').addEventListener('click', fetchTopGenres);
-    document.getElementById('postButton').onclick = createPostWithTracks;
+    document.getElementById('postButton').addEventListener('click', createPostWithTracks);
 }
 
 function fetchTopArtists() {
@@ -26,10 +24,6 @@ function fetchTopArtists() {
 function fetchTopSongs() {
     const token = sessionStorage.getItem('spotifyAccessToken');
     fetchTop5Spotify('tracks', token);
-}
-
-function fetchTopGenres() {
-    alert('Spotify API does not support fetching top genres directly.');
 }
 
 function fetchTop5Spotify(type, token) {
@@ -45,13 +39,19 @@ function fetchTop5Spotify(type, token) {
             'Authorization': `Bearer ${token}`
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch data from Spotify API');
+        }
+        return response.json();
+    })
     .then(data => {
         displayTop5(data, type);
         return data.items;
     })
     .catch(error => {
         console.error(`Error fetching top ${type} from Spotify:`, error);
+        alert(`Error fetching top ${type} from Spotify. Please try again later.`);
         throw error;
     });
 }
@@ -60,8 +60,8 @@ function displayTop5(data, type) {
     const resultDiv = document.getElementById('result');
     resultDiv.innerHTML = ''; // Clear previous results
 
-    if (!data.items) {
-        resultDiv.innerText = 'No data found.';
+    if (!data.items || data.items.length === 0) {
+        resultDiv.innerText = `No ${type} found.`;
         return;
     }
 
@@ -122,12 +122,18 @@ function fetchTopTracks(token) {
             'Authorization': 'Bearer ' + token
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch top tracks from Spotify API');
+        }
+        return response.json();
+    })
     .then(data => {
         displayTop5(data, 'tracks');
     })
     .catch(error => {
         console.error('Error fetching top tracks:', error);
+        alert('Error fetching top tracks. Please try again later.');
     });
 }
 
@@ -148,26 +154,23 @@ function setupSpotifyLoginButton() {
 }
 
 function createPostWithTracks() {
-    const postText = document.getElementById('postText').value;
-    let tracksText = '';
+    const postText = document.getElementById('postText').value.trim(); // Get trimmed post text
+    if (!postText) {
+        alert('Please enter something to post.');
+        return;
+    }
 
-    // Check if fetching top tracks or artists
     const token = sessionStorage.getItem('spotifyAccessToken');
-    const fetchType = document.querySelector('input[name="fetch-type"]:checked').value; // Assuming you have radio buttons to select 'tracks' or 'artists'
+    const fetchType = document.querySelector('input[name="fetch-type"]:checked').value;
 
     if (fetchType === 'tracks') {
         fetchTop5Spotify('tracks', token)
             .then(tracks => {
-                // Construct text for top tracks
-                if (tracks.length > 0) {
-                    tracksText = '<br><br><strong>Top 5 Tracks:</strong><br>';
-                    tracks.forEach((track, index) => {
-                        tracksText += `${index + 1}. ${track.name} by ${track.artists.map(artist => artist.name).join(', ')}<br>`;
-                    });
-                }
+                const tracksText = tracks.length > 0 ? '<br><br><strong>Top 5 Tracks:</strong><br>' +
+                    tracks.map((track, index) => `${index + 1}. ${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`).join('<br>') : '';
 
                 const fullPostText = postText + tracksText;
-                createPost(fullPostText);
+                createPost(fullPostText); // Call createPost function with combined text
             })
             .catch(error => {
                 console.error('Error fetching top tracks:', error);
@@ -176,13 +179,11 @@ function createPostWithTracks() {
     } else if (fetchType === 'artists') {
         fetchTop5Spotify('artists', token)
             .then(artists => {
-                // Construct text for top artists
-                if (artists.length > 0) {
-                    tracksText = '<br><br><strong>Top 5 Artists:</strong><br>';
-                    artists.forEach((artist, index) => {
+                const artistsText = artists.length > 0 ? '<br><br><strong>Top 5 Artists:</strong><br>' +
+                    artists.map(artist => {
                         const imageUrl = artist.images && artist.images.length > 0 ? artist.images[0].url : 'images/maria.jpg';
                         const genres = artist.genres && artist.genres.length > 0 ? artist.genres.join(', ') : 'No genres available';
-                        tracksText += `
+                        return `
                             <div class="artist">
                                 <h3>${artist.name}</h3>
                                 <img src="${imageUrl}" alt="${artist.name}" height="160" width="160">
@@ -190,11 +191,10 @@ function createPostWithTracks() {
                                 <p>Popularity: ${artist.popularity}</p>
                                 <a href="${artist.external_urls.spotify}" target="_blank">Listen on Spotify</a>
                             </div><br>`;
-                    });
-                }
+                    }).join('') : '';
 
-                const fullPostText = postText + tracksText;
-                createPost(fullPostText);
+                const fullPostText = postText + artistsText;
+                createPost(fullPostText); // Call createPost function with combined text
             })
             .catch(error => {
                 console.error('Error fetching top artists:', error);
@@ -216,14 +216,19 @@ function createPost(text) {
             text: text
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to create post');
+        }
+        return response.json();
+    })
     .then(data => {
         console.log('Success:', data);
         alert('Post created successfully!');
-        fetchPosts();
+        fetchPosts(); // Refresh posts after successful creation
     })
     .catch((error) => {
-        console.error('Error:', error);
+        console.error('Error creating post:', error);
         alert('An error occurred while creating the post.');
     });
 }
@@ -232,12 +237,12 @@ function fetchPosts() {
     fetch('http://microbloglite.us-east-2.elasticbeanstalk.com/api/posts?limit=15&offset=0', {
         headers: {
             'accept': 'application/json',
-            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkVsR2F0bzU3IiwiaWF0IjoxNzE5NDE5OTczLCJleHAiOjE3MTk1MDYzNzN9.gxauwLzxi8175BSfV9y2HPB0gV502_HX1fEa2xalRr0'
+            'Authorization': `Bearer ${getLoginData().token}`
         }
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Failed to fetch posts');
         }
         return response.json();
     })
@@ -286,7 +291,12 @@ function fetchAndUpdateProfileInfo() {
                 'Authorization': `Bearer ${loginData.token}`
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to fetch profile info');
+            }
+            return response.json();
+        })
         .then(user => {
             document.getElementById('profileName').textContent = user.username;
         })
@@ -341,7 +351,12 @@ function toggleLike(postId, button) {
             postId: postId
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to toggle like');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             const likeCount = parseInt(likeCountSpan.textContent);
@@ -353,81 +368,3 @@ function toggleLike(postId, button) {
     })
     .catch(error => console.error('Error toggling like:', error));
 }
-
-//THIS IS A TEST to see if I can have music from a specific artist to play in the background of my website.
-
-window.onSpotifyWebPlaybackSDKReady = () => {
-    const token = 'your_access_token'; // Replace with the user's access token obtained via OAuth
-  
-    const player = new Spotify.Player({
-      name: 'Web Playback SDK Quick Start Player',
-      getOAuthToken: cb => { cb(token); }
-    });
-  
-    // Error handling
-    player.addListener('initialization_error', ({ message }) => { console.error(message); });
-    player.addListener('authentication_error', ({ message }) => { console.error(message); });
-    player.addListener('account_error', ({ message }) => { console.error(message); });
-    player.addListener('playback_error', ({ message }) => { console.error(message); });
-  
-    // Playback status updates
-    player.addListener('player_state_changed', state => { console.log(state); });
-  
-    // Ready
-    player.addListener('ready', ({ device_id }) => {
-      console.log('Ready with Device ID', device_id);
-  
-      // Replace with The Marías' Spotify artist ID
-      const artistId = '2sSGPbdZJkaSE2AbcGOACx';
-  
-      // Get top tracks of the artist
-      fetch(`https://api.spotify.com/v1/artists/${artistId}/top-tracks?market=US`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      .then(response => response.json())
-      .then(data => {
-        const topTracks = data.tracks.map(track => track.uri);
-        
-        // Play the first track
-        player
-          .connect()
-          .then(() => {
-            player
-              .resume()
-              .then(() => {
-                player
-                  .play({
-                    uris: topTracks
-                  })
-                  .then(() => {
-                    console.log('Playing top tracks');
-                  })
-                  .catch(error => {
-                    console.error('Error playing track:', error);
-                  });
-              })
-              .catch(error => {
-                console.error('Error resuming playback:', error);
-              });
-          })
-          .catch(error => {
-            console.error('Error connecting to player:', error);
-          });
-      })
-      .catch(error => {
-        console.error('Error fetching top tracks:', error);
-      });
-    });
-  
-    // Connect to the player
-    player.connect().then(success => {
-      if (success) {
-        console.log('The Web Playback SDK successfully connected to Spotify!');
-      }
-    }).catch(error => {
-      console.error('Failed to connect to Spotify:', error);
-    });
-  };
