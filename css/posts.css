@@ -131,7 +131,7 @@ h1 {
 .like-button button {
     background-color: transparent;
     border: none;
-    color: #fff;
+    color: black;
     cursor: pointer;
     display: flex;
     align-items: center;
