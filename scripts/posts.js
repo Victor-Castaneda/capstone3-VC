@@ -29,7 +29,7 @@ function fetchTopSongs() {
         const trackNames = tracks.map(track => `${track.name} by ${track.artists.map(artist => artist.name).join(', ')}`).join('<br>');
         const postText = `Top 5 Tracks:<br>${trackNames}`;
         document.getElementById('postText').value = postText; // Set post text area
-        createPostWithTracks(); // Create post with the fetched tracks
+        // Removed createPostWithTracks(); to prevent automatic post creation
     });
 }
 
