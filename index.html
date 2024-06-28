@@ -29,40 +29,42 @@
     </script>
 </head>
 <body id="loginbod">
-<div id="mainbox">
-    <header>
-        <h1>Maria's Melodies</h1>
-    </header>
+    <div id="mainbox">
+        <header>
+            <h1>Maria's Melodies</h1>
+        </header>
 
-    <main>
+        <main>
+            <form id="login">
+                <img id="vinyl" src="images/vinyl.webp" width="200" height="160">
+                <div>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" minlength="3">
+                </div>
 
-        <form id="login">
-            <img id="vinyl" src="images/vinyl.webp" width="200" height="160">
-            <div>
-                <label for="username">Username</label>
-                <input type="text" id="username" minlength="3">
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" minlength="6">
+                </div>
+
+                <button id="loginButton" type="submit">Login</button>
+            </form>
+            <audio loop="true" id="audio">
+                <source src="unmilion.mp3" type="audio/mpeg">
+            </audio>
+            <div class="volume-slider">
+                <input id="volume-slider" type="range" min="0" max="100" step="1" value="50">
             </div>
-
-            <div>
-                <label for="password">Password</label>
-                <input type="password" id="password" minlength="6">
-            </div>
-
-            <button id="loginButton" type="submit">Login</button>
-        </form>
-        <audio loop="true" id="audio">
-            <source src="unmilion.mp3" type="audio/mpeg">
-        </audio>
-        <div class="volume-slider">
-            <input id="volume-slider" type="range" min="0" max="100" step="1" value="50">
-        </div>
-        <button id="registerbutton" type="button" ><a href="register.html" id="registerbutton">Register</a></button> <!-- Note the type change -->
-       
-
-    </main>
+            <button id="registerbutton" type="button"><a href="register.html" id="registerbutton">Register</a></button> <!-- Note the type change -->
+        </main>
+    </div>
     
-    <footer>
+    <div id="info">
+        <p>Maria's Melodies is a social media platform designed for music enthusiasts to share their favorite tunes and artists. Users can create posts detailing their top 5 songs and artists, accompanied by personal reflections or feelings about each selection. It's a space where music lovers can connect, discover new tracks, and express their passion for music through meaningful discussions and shared experiences.</p>
+    </div>
 
+    <footer>
+    
     </footer>
 
     <!-- Page-specific code -->
