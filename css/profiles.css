@@ -85,17 +85,6 @@ h1 {
     gap: 10px;
 }
 
-#vinyl {
-    width: 150px;
-    height: 150px;
-    animation: rotateImage 10s linear infinite;
-    border-radius: 50%;
-    overflow: hidden;
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 10;
-}
 
 @keyframes rotateImage {
     from {
@@ -221,4 +210,8 @@ h1 {
     width: 65%; /* Adjust width as needed */
 }
 
-
+#vinyl {
+    width: 55px;
+    height: 55px;
+    animation: rotateImage 10s linear infinite;
+}
