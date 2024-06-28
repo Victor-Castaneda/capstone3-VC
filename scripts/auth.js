@@ -50,7 +50,7 @@ async function login(loginData) {
         return null;
     }
     window.localStorage.setItem("login-data", JSON.stringify(loginData_1));
-    window.location.assign("/posts"); // redirect
+    window.location.assign("/posts.html"); // redirect
     return loginData_1;
 }
 
