@@ -7,8 +7,8 @@ Key Features:
 Profile Creation: Users can create personalized profiles to showcase their music taste.
 Top 5 Sharing: Easily share top 5 songs and artists with friends and the community.
 Engagement: Users can like and comment on posts, creating interactive discussions around music preferences.
-Spotify Integration: Seamlessly integrates with Spotify to pull user data and play playlists directly within the platform.
-Personalized Feed: Tailored content based on users' music tastes and interactions.
+Spotify Integration: Seamlessly integrates with Spotify to pull user data directly within the platform.
+
 Project Journey:
 Maria's Melodies marks the final chapter of a trio of capstone projects. This journey has been both fun and enlightening, pushing the boundaries of creativity and technical skills. From conceptualizing the idea to integrating complex features like Spotify playback, each step has been a valuable learning experience. This project not only represents the culmination of academic efforts but also the joy of merging technology with a passion for music.
 
